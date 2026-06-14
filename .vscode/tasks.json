@@ -8,7 +8,8 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-IC:\\Users\\anesb\\Desktop\\Libraries\\SFML-3.1.0\\include",
-                "${file}",
+                "${workspaceFolder}\\main.cpp",
+                "${workspaceFolder}\\functions.cpp",
                 "-LC:\\Users\\anesb\\Desktop\\Libraries\\SFML-3.1.0\\lib",
                 "-lsfml-graphics",
                 "-lsfml-system",
@@ -17,7 +18,7 @@
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": ""
             },
             "problemMatcher": [
                 "$gcc"
