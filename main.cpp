@@ -7,9 +7,9 @@
 #include <string>
 
 
-
 // Made using SFML 3.1.0 library //
 // All sprites are generated using ChatGPT // 
+
 
 int main () {
     srand(time(NULL));
@@ -53,7 +53,7 @@ int main () {
     sf::Sprite basketSprite(basketTexture);
     basketSprite.setOrigin( {512.0f, 512.0f} );
     basketSprite.setScale( {0.20f, 0.20f });
-    basketSprite.setPosition( {800.0f, 700.0f} );
+    basketSprite.setPosition( {800.0f, 800.0f} );
 
 
     // Score counter //
@@ -65,7 +65,7 @@ int main () {
     scoreText.setString("0");
     scoreText.setCharacterSize(100);
     scoreText.setFillColor(sf::Color::Black);
-    scoreText.setPosition( {670.0f, 50.0f} );
+    scoreText.setPosition( {650.0f, 50.0f} );
     unsigned int scoreCounter = 0;
 
     //FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
@@ -77,6 +77,8 @@ int main () {
     }
 
     bool lemonLanded[numLemons] = {}; // all values initialized to 0 (false), this bool array is used so that the score is incremented once after each lemon lands, not once per frame
+
+    
     
     // Running the window // 
     while (window.isOpen()) {
@@ -95,10 +97,13 @@ int main () {
             }
         }
 
+        // Basket moves horizontally //
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-            sf::Vector2i cursorPosition = sf::Mouse::getPosition(window);
-            basketSprite.setPosition(sf::Vector2f(cursorPosition));
+            float cursorXPosition = static_cast<float> (sf::Mouse::getPosition(window).x);
+            basketSprite.setPosition( {cursorXPosition, 800.0f } );
         }
+
+        sf::FloatRect basketHitbox( {basketSprite.getPosition().x, basketSprite.getPosition().y}, {5, 5} );
 
         window.clear(sf::Color(63, 215, 253));
         
@@ -107,21 +112,29 @@ int main () {
     
         for (unsigned int i = 0; i <= numLemons; ++i) {
     
-            if (lemonSprites[i].getPosition().y == 800.0 && !lemonLanded[i] ) {
-                lemonLanded[i] = true;
-                ++scoreCounter;
+            if (lemonSprites[i].getPosition().y == 800.0 ) {
                 continue;
             }
 
-            else if (!lemonLanded[i]) {
-                scoreText.setString("Score: " + std::to_string(scoreCounter));
+            else {
                 lemonSprites[i].move( {0.0f, 0.5f} );
+                scoreText.setString("Score: " + std::to_string(scoreCounter));
             }
 
         }
 
+        for (unsigned int i = 0; i <= numLemons; ++i) {
+            if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonLanded[i] == false){
+                lemonLanded[i] = true;
+                ++scoreCounter;
+                scoreText.setString("Score: " + std::to_string(scoreCounter));
+            }
+        }
+
         for (unsigned int i = 0; i < numLemons; ++i) {
-            window.draw(lemonSprites[i]);
+            if (!lemonLanded[i]) {
+                window.draw(lemonSprites[i]);
+            }
         }
 
         window.draw(basketSprite);
