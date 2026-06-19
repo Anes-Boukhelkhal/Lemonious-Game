@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include "functions.hpp"
+#include "include/functions.hpp"
 #include <iostream>
 #include <vector>
 #include <ctime>
@@ -57,18 +57,28 @@ int main () {
 
 
     // Score counter //
-    sf::Font scoreFont;
-    if (!scoreFont.openFromFile("assets/PressStart2P-Regular.ttf")) {
+    sf::Font font;
+    if (!font.openFromFile("assets/PressStart2P-Regular.ttf")) {
         loadError("Font");
     }
-    sf::Text scoreText(scoreFont);
+    sf::Text scoreText(font);
     scoreText.setString("0");
     scoreText.setCharacterSize(100);
     scoreText.setFillColor(sf::Color::Black);
-    scoreText.setPosition( {650.0f, 50.0f} );
+    scoreText.setPosition( {600.0f, 50.0f} );
     unsigned int scoreCounter = 0;
 
-    //FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
+    // Levels Completion Display //
+    // FIXME: Tried to make a function to be used for multiple levels, but getting an arithemtic exception thrown when drawing the returned sf::Text object
+    sf::Text levelOneComplete(font);
+    levelOneComplete.setString("Level 1 Complete!");
+    levelOneComplete.setCharacterSize(60);
+    levelOneComplete.setFillColor(sf::Color::Black);
+    levelOneComplete.setPosition( {550.0f, 150.0f});
+
+    
+
+    // FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
     for (unsigned int i = 0; i < numLemons; ++i) {
         float lemonXPos = static_cast<float> (rand () % (380) + 700);
         float lemonYPos = static_cast<float> (rand () % (200) + 350);
@@ -78,7 +88,6 @@ int main () {
 
     bool lemonLanded[numLemons] = {}; // all values initialized to 0 (false), this bool array is used so that the score is incremented once after each lemon lands, not once per frame
 
-    
     
     // Running the window // 
     while (window.isOpen()) {
@@ -112,7 +121,7 @@ int main () {
     
         for (unsigned int i = 0; i <= numLemons; ++i) {
     
-            if (lemonSprites[i].getPosition().y == 800.0 ) {
+            if (lemonSprites[i].getPosition().y == 800.0f ) {
                 continue;
             }
 
@@ -124,6 +133,9 @@ int main () {
         }
 
         for (unsigned int i = 0; i <= numLemons; ++i) {
+            if (lemonSprites[i].getPosition().y == 800.0f) {
+                continue;
+            }
             if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonLanded[i] == false){
                 lemonLanded[i] = true;
                 ++scoreCounter;
@@ -132,9 +144,13 @@ int main () {
         }
 
         for (unsigned int i = 0; i < numLemons; ++i) {
-            if (!lemonLanded[i]) {
+            if (!lemonLanded[i] && lemonSprites[i].getPosition().y != 800.0f ) {
                 window.draw(lemonSprites[i]);
             }
+        }
+
+        if (scoreCounter == 12) {
+            window.draw(levelOneComplete);
         }
 
         window.draw(basketSprite);
