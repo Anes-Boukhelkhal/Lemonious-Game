@@ -21,6 +21,8 @@ int main () {
     sf::RenderWindow window(sf::VideoMode( {width, height} ), "Lemon Game!", sf::State::Fullscreen);
     window.setFramerateLimit(144);
 
+    bool gameStarted = false;
+
     // Sprites setup // 
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/background.png")) {
@@ -56,6 +58,7 @@ int main () {
     basketSprite.setPosition( {800.0f, 800.0f} );
 
 
+
     // Score counter //
     sf::Font font;
     if (!font.openFromFile("assets/PressStart2P-Regular.ttf")) {
@@ -67,6 +70,8 @@ int main () {
     scoreText.setFillColor(sf::Color::Black);
     scoreText.setPosition( {600.0f, 50.0f} );
     unsigned int scoreCounter = 0;
+
+
 
     // Levels Completion Display //
     // FIXME: Tried to make a function to be used for multiple levels, but getting an arithemtic exception thrown when drawing the returned sf::Text object
@@ -89,10 +94,10 @@ int main () {
     bool lemonLanded[numLemons] = {}; // all values initialized to 0 (false), this bool array is used so that the score is incremented once after each lemon lands, not once per frame
 
     
-    // Running the window // 
+    // Running the window loop // 
     while (window.isOpen()) {
 
-        // Polling events //
+        // Event polling loop //
         while (const std::optional event = window.pollEvent()) {
             
             if (event->is<sf::Event::Closed>()) {
@@ -115,51 +120,67 @@ int main () {
         sf::FloatRect basketHitbox( {basketSprite.getPosition().x, basketSprite.getPosition().y}, {5, 5} );
 
         window.clear(sf::Color(63, 215, 253));
-        
         window.draw(backgroundSprite);
         window.draw(treeSprite);
-    
-        for (unsigned int i = 0; i <= numLemons; ++i) {
-    
-            if (lemonSprites[i].getPosition().y == 800.0f ) {
-                continue;
-            }
+                
+        sf::Text introText(font);
+        introText.setString("0");
+        introText.setCharacterSize(50);
+        introText.setFillColor(sf::Color::Black);
+        introText.setPosition( {580.0f, 50.0f} );
+        introText.setString("Welcome to Lemonious!\nPress Space to Start"); 
+        if (!gameStarted) {
+            window.draw(introText);
+        }
+        
 
-            else {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
+            gameStarted = true;
+        }
+
+        if (gameStarted) { 
+            for (unsigned int i = 0; i < numLemons; ++i) {
+
+                if (lemonSprites[i].getPosition().y == 800.0f ) {
+                continue;
+                }
+
+                else {
                 lemonSprites[i].move( {0.0f, 0.5f} );
                 scoreText.setString("Score: " + std::to_string(scoreCounter));
+                }
+
             }
 
-        }
-
-        for (unsigned int i = 0; i <= numLemons; ++i) {
-            if (lemonSprites[i].getPosition().y == 800.0f) {
-                continue;
+            for (unsigned int i = 0; i < numLemons; ++i) {
+                if (lemonSprites[i].getPosition().y == 800.0f) {
+                    continue;
+                }
+                if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonLanded[i] == false){
+                    lemonLanded[i] = true;
+                    ++scoreCounter;
+                    scoreText.setString("Score: " + std::to_string(scoreCounter));
+                }
             }
-            if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonLanded[i] == false){
-                lemonLanded[i] = true;
-                ++scoreCounter;
-                scoreText.setString("Score: " + std::to_string(scoreCounter));
+
+            for (unsigned int i = 0; i < numLemons; ++i) {
+                if (!lemonLanded[i] && lemonSprites[i].getPosition().y != 800.0f ) {
+                    window.draw(lemonSprites[i]);
+                }
             }
-        }
 
-        for (unsigned int i = 0; i < numLemons; ++i) {
-            if (!lemonLanded[i] && lemonSprites[i].getPosition().y != 800.0f ) {
-                window.draw(lemonSprites[i]);
+            if (scoreCounter == 12) {
+                window.draw(levelOneComplete);
             }
+
+            window.draw(scoreText);
+                
         }
 
-        if (scoreCounter == 12) {
-            window.draw(levelOneComplete);
+            window.draw(basketSprite);
+            window.display();
+
         }
-
-        window.draw(basketSprite);
-
-        window.draw(scoreText);
-
-        window.display();
-
-    }
     
     return 0;
 
