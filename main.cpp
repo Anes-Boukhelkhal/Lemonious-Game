@@ -21,7 +21,7 @@ int main () {
     sf::RenderWindow window(sf::VideoMode( {width, height} ), "Lemon Game!", sf::State::Fullscreen);
     window.setFramerateLimit(144);
 
-    bool gameStarted = false;
+
 
     // Sprites setup // 
     sf::Texture backgroundTexture;
@@ -43,7 +43,7 @@ int main () {
     if (!lemonTexture.loadFromFile("assets/lemon.png")) {
         loadError("lemon");
     }
-    const unsigned int numLemons = 12;
+    unsigned int numLemons = 12;
     std::vector<sf::Sprite> lemonSprites;
     sf::Sprite lemonSprite(lemonTexture);
     lemonSprite.setScale( {0.10, 0.10} );
@@ -65,7 +65,7 @@ int main () {
         loadError("Font");
     }
     sf::Text scoreText(font);
-    scoreText.setString("0");
+    
     scoreText.setCharacterSize(100);
     scoreText.setFillColor(sf::Color::Black);
     scoreText.setPosition( {600.0f, 50.0f} );
@@ -76,10 +76,15 @@ int main () {
     // Levels Completion Display //
     // FIXME: Tried to make a function to be used for multiple levels, but getting an arithemtic exception thrown when drawing the returned sf::Text object
     sf::Text levelOneComplete(font);
-    levelOneComplete.setString("Level 1 Complete!");
+    levelOneComplete.setString("Level 1 Complete!\nPress [2] to continue");
     levelOneComplete.setCharacterSize(60);
     levelOneComplete.setFillColor(sf::Color::Black);
     levelOneComplete.setPosition( {550.0f, 150.0f});
+    
+    bool gameStarted = false;
+    bool levelOne = false;
+    bool levelTwo = false;
+
 
     
 
@@ -124,7 +129,6 @@ int main () {
         window.draw(treeSprite);
                 
         sf::Text introText(font);
-        introText.setString("0");
         introText.setCharacterSize(50);
         introText.setFillColor(sf::Color::Black);
         introText.setPosition( {580.0f, 50.0f} );
@@ -133,12 +137,13 @@ int main () {
             window.draw(introText);
         }
         
-
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
             gameStarted = true;
+            levelOne = true;
         }
 
-        if (gameStarted) { 
+        // FIXME: Add an option to restart the game if level one failed (and for subsequent levels)
+        if (levelOne) { 
             for (unsigned int i = 0; i < numLemons; ++i) {
 
                 if (lemonSprites[i].getPosition().y == 800.0f ) {
@@ -169,13 +174,27 @@ int main () {
                 }
             }
 
+            window.draw(scoreText);
+
             if (scoreCounter == 12) {
                 window.draw(levelOneComplete);
-            }
 
-            window.draw(scoreText);
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
+                    levelOne = false;
+                    levelTwo = true;
+
+                }
+            }
                 
         }
+
+        else if (levelTwo) {
+            scoreCounter = 0;
+            scoreText.setString("Score: " + std::to_string(scoreCounter));
+            window.draw(scoreText);
+        }
+
+
 
             window.draw(basketSprite);
             window.display();
