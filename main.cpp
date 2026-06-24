@@ -8,7 +8,7 @@
 
 
 // Made using SFML 3.1.0 library //
-// All sprites are generated using ChatGPT // 
+// All sprite textures are generated using ChatGPT // 
 
 
 int main () {
@@ -54,18 +54,19 @@ int main () {
     }
     sf::Sprite basketSprite(basketTexture);
     basketSprite.setOrigin( {512.0f, 512.0f} );
-    basketSprite.setScale( {0.20f, 0.20f });
+    basketSprite.setScale( {0.20f, 0.20f } );
     basketSprite.setPosition( {800.0f, 800.0f} );
 
 
 
-    // Score counter //
+    // Font Setup //
     sf::Font font;
     if (!font.openFromFile("assets/PressStart2P-Regular.ttf")) {
         loadError("Font");
     }
+
+    // Score Counter //
     sf::Text scoreText(font);
-    
     scoreText.setCharacterSize(100);
     scoreText.setFillColor(sf::Color::Black);
     scoreText.setPosition( {600.0f, 50.0f} );
@@ -74,17 +75,28 @@ int main () {
 
 
     // Levels Completion Display //
-    // FIXME: Tried to make a function to be used for multiple levels, but getting an arithemtic exception thrown when drawing the returned sf::Text object
-    sf::Text levelOneComplete(font);
-    levelOneComplete.setString("Level 1 Complete!\nPress [2] to continue");
-    levelOneComplete.setCharacterSize(60);
-    levelOneComplete.setFillColor(sf::Color::Black);
-    levelOneComplete.setPosition( {550.0f, 150.0f});
+    sf::Text levelOneComplete = loadLevel(font, "Level 1 Complete!\nPress [2] to continue");
     
+
+
+    sf::Text introText(font);
+    introText.setCharacterSize(50);
+    introText.setFillColor(sf::Color::Black);
+    introText.setPosition( {580.0f, 50.0f} );
+    introText.setString("Welcome to Lemonious!\nPress Space to Start"); 
+
+    sf::Text restartText(font);
+    restartText.setCharacterSize(50);
+    restartText.setFillColor(sf::Color::Black);
+    restartText.setPosition( {180.0f, 50.0f} );
+    restartText.setString("Press space to restart this level"); 
+
+    // Game States //
     bool gameStarted = false;
     bool levelOne = false;
     bool levelTwo = false;
-
+    bool lemonsFallen = false;
+    bool lemonsCaught[numLemons] = {}; // all values initialized to 0 (false), this bool array is used so that the score is incremented once after each lemon lands, not once per frame
 
     
 
@@ -96,7 +108,7 @@ int main () {
         lemonSprites.push_back(lemonSprite);
     }
 
-    bool lemonLanded[numLemons] = {}; // all values initialized to 0 (false), this bool array is used so that the score is incremented once after each lemon lands, not once per frame
+    
 
     
     // Running the window loop // 
@@ -124,15 +136,11 @@ int main () {
 
         sf::FloatRect basketHitbox( {basketSprite.getPosition().x, basketSprite.getPosition().y}, {5, 5} );
 
-        window.clear(sf::Color(63, 215, 253));
+        window.clear();
         window.draw(backgroundSprite);
         window.draw(treeSprite);
                 
-        sf::Text introText(font);
-        introText.setCharacterSize(50);
-        introText.setFillColor(sf::Color::Black);
-        introText.setPosition( {580.0f, 50.0f} );
-        introText.setString("Welcome to Lemonious!\nPress Space to Start"); 
+
         if (!gameStarted) {
             window.draw(introText);
         }
@@ -146,37 +154,42 @@ int main () {
         if (levelOne) { 
             for (unsigned int i = 0; i < numLemons; ++i) {
 
-                if (lemonSprites[i].getPosition().y == 800.0f ) {
-                continue;
+                if (lemonSprites[i].getPosition().y == 900.0f ) {
+                    lemonsFallen = true;
+                    continue;
                 }
 
                 else {
-                lemonSprites[i].move( {0.0f, 0.5f} );
-                scoreText.setString("Score: " + std::to_string(scoreCounter));
+                    lemonSprites[i].move( {0.0f, 0.5f} );
+                    scoreText.setString("Score: " + std::to_string(scoreCounter));
                 }
 
             }
 
             for (unsigned int i = 0; i < numLemons; ++i) {
-                if (lemonSprites[i].getPosition().y == 800.0f) {
+                if (lemonsFallen) {
                     continue;
                 }
-                if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonLanded[i] == false){
-                    lemonLanded[i] = true;
+                if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonsCaught[i] == false){
+                    lemonsCaught[i] = true;
                     ++scoreCounter;
                     scoreText.setString("Score: " + std::to_string(scoreCounter));
                 }
             }
 
             for (unsigned int i = 0; i < numLemons; ++i) {
-                if (!lemonLanded[i] && lemonSprites[i].getPosition().y != 800.0f ) {
+                if (lemonsFallen) {
+                    window.draw(restartText);
+                    break;
+                }
+                else if (!lemonsCaught[i] && !lemonsFallen) {
                     window.draw(lemonSprites[i]);
+                    window.draw(scoreText);
                 }
             }
-
-            window.draw(scoreText);
-
+            
             if (scoreCounter == 12) {
+                window.draw(scoreText);
                 window.draw(levelOneComplete);
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
@@ -185,7 +198,7 @@ int main () {
 
                 }
             }
-                
+
         }
 
         else if (levelTwo) {
