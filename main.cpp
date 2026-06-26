@@ -100,13 +100,6 @@ int main () {
 
     
 
-    // FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
-    for (unsigned int i = 0; i < numLemons; ++i) {
-        float lemonXPos = static_cast<float> (rand () % (380) + 700);
-        float lemonYPos = static_cast<float> (rand () % (200) + 350);
-        lemonSprite.setPosition ( {lemonXPos, lemonYPos} );
-        lemonSprites.push_back(lemonSprite);
-    }
 
     
 
@@ -148,13 +141,22 @@ int main () {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
             gameStarted = true;
             levelOne = true;
+
+            // FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
+            for (unsigned int i = 0; i < numLemons; ++i) {
+                float lemonXPos = static_cast<float> (rand () % (380) + 700);
+                float lemonYPos = static_cast<float> (rand () % (200) + 350);
+                lemonSprite.setPosition ( {lemonXPos, lemonYPos} );
+                lemonSprites.push_back(lemonSprite);
+            }
+
         }
 
         // FIXME: Add an option to restart the game if level one failed (and for subsequent levels)
         if (levelOne) { 
             for (unsigned int i = 0; i < numLemons; ++i) {
 
-                if (lemonSprites[i].getPosition().y == 900.0f ) {
+                if (lemonSprites[i].getPosition().y == 1200.0f && !lemonsCaught[i]) {
                     lemonsFallen = true;
                     continue;
                 }
@@ -170,7 +172,7 @@ int main () {
                 if (lemonsFallen) {
                     continue;
                 }
-                if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && lemonsCaught[i] == false){
+                if (lemonSprites[i].getGlobalBounds().findIntersection(basketHitbox) && !lemonsCaught[i]){
                     lemonsCaught[i] = true;
                     ++scoreCounter;
                     scoreText.setString("Score: " + std::to_string(scoreCounter));
@@ -180,7 +182,10 @@ int main () {
             for (unsigned int i = 0; i < numLemons; ++i) {
                 if (lemonsFallen) {
                     window.draw(restartText);
-                    break;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
+                        levelOne = false;
+                        gameStarted = false;
+                    }
                 }
                 else if (!lemonsCaught[i] && !lemonsFallen) {
                     window.draw(lemonSprites[i]);
@@ -189,10 +194,13 @@ int main () {
             }
             
             if (scoreCounter == 12) {
+                lemonsFallen = false;
+
                 window.draw(scoreText);
                 window.draw(levelOneComplete);
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
+                    
                     levelOne = false;
                     levelTwo = true;
 
