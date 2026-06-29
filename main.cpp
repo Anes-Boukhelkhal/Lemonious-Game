@@ -135,12 +135,19 @@ int main () {
                 
 
         if (!gameStarted) {
+
             window.draw(introText);
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
+                gameStarted = true;
+                levelOne = true;
+            }
+
         }
         
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
-            gameStarted = true;
-            levelOne = true;
+
+
+        if (gameStarted && lemonSprites.empty()) {
 
             // FIXME: want lemons to be placed only within boundaries of the tree sprite, and also without overlapping with each other
             for (unsigned int i = 0; i < numLemons; ++i) {
@@ -152,11 +159,12 @@ int main () {
 
         }
 
-        // FIXME: Add an option to restart the game if level one failed (and for subsequent levels)
+
+        
         if (levelOne) { 
             for (unsigned int i = 0; i < numLemons; ++i) {
 
-                if (lemonSprites[i].getPosition().y == 1200.0f && !lemonsCaught[i]) {
+                if (lemonSprites[i].getPosition().y == height && !lemonsCaught[i]) {
                     lemonsFallen = true;
                     continue;
                 }
@@ -182,10 +190,11 @@ int main () {
             for (unsigned int i = 0; i < numLemons; ++i) {
                 if (lemonsFallen) {
                     window.draw(restartText);
+
                     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
-                        levelOne = false;
-                        gameStarted = false;
+                        restartLevel(lemonsFallen, numLemons, lemonsCaught, scoreCounter, lemonSprites);
                     }
+
                 }
                 else if (!lemonsCaught[i] && !lemonsFallen) {
                     window.draw(lemonSprites[i]);
@@ -199,8 +208,8 @@ int main () {
                 window.draw(scoreText);
                 window.draw(levelOneComplete);
 
+                // FIXME: Score counter disappearing when space is pressed
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
-                    
                     levelOne = false;
                     levelTwo = true;
 
@@ -209,6 +218,9 @@ int main () {
 
         }
 
+
+
+        // FIXME: Score counter disappearing when space is pressed
         else if (levelTwo) {
             scoreCounter = 0;
             scoreText.setString("Score: " + std::to_string(scoreCounter));

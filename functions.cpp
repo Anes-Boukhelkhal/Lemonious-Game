@@ -18,4 +18,16 @@ sf::Text loadLevel(sf::Font &font, const char description[]) {
     return levelComplete;
 }
 
+void restartLevel(bool &lemons_Fallen, unsigned int &num_Lemons, bool lemons_Caught[], unsigned int &score_Counter,  std::vector<sf::Sprite> &lemon_Sprites) {
+    
+    lemons_Fallen = false;
+    score_Counter = 0;
+    lemon_Sprites.clear();
+
+    for (unsigned int i = 0; i < num_Lemons; ++i) {
+        lemons_Caught[i] = false;
+    }
+}
+                      
+
 
